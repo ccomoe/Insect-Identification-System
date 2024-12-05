@@ -34,7 +34,7 @@ num_classes = len(classes)
 model = SwinTransformerModel(num_classes=num_classes).to(device)
 
 # 加载训练好的权重
-state_dict = torch.load("./model/swin_insect_classifier.pth", map_location=device, weights_only=True)
+state_dict = torch.load("./models/swin_insect_classifier.pth", map_location=device, weights_only=True)
 model.load_state_dict(state_dict)
 model.eval()
 print("Model loaded successfully.")
