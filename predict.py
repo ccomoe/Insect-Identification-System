@@ -66,16 +66,26 @@ def predict_folder(folder_path, model, transform, classes, device):
 
 # 通用预测函数
 def predict(input_path, model, transform, classes, device):
-    if os.path.isfile(input_path):
+    if os.path.isfile(input_path):  # 如果是文件，进行单张图片预测
         class_name = predict_image(input_path, model, transform, classes, device)
         print(f"Image: {input_path}, Predicted Class: {class_name}")
-    elif os.path.isdir(input_path):
+    elif os.path.isdir(input_path):  # 如果是文件夹，进行文件夹预测
         predictions = predict_folder(input_path, model, transform, classes, device)
         for file_name, class_name in predictions.items():
             print(f"Image: {file_name}, Predicted Class: {class_name}")
     else:
-        print(f"Invalid path: {input_path}")
+        print(f"Invalid path: {input_path}")  # 如果路径无效
 
-# 使用示例
-input_path = "./test_images"  # 替换为单张图片路径或文件夹路径
+# 获取用户输入的路径或文件名
+input_path = input(f"请输入目标文件名（带扩展名）或文件夹路径（默认路径：./test_images）：").strip()
+
+# 如果用户没有输入，默认使用 './test_images'
+if not input_path:
+    input_path = './test_images'
+
+# 如果用户输入的是文件名，则在默认路径 './test_images' 中查找该文件
+if os.path.isfile(os.path.join('./test_images', input_path)):
+    input_path = os.path.join('./test_images', input_path)
+
+# 进行预测
 predict(input_path, model, transform, classes, device)
