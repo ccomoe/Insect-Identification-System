@@ -1,25 +1,26 @@
 import os
 import torch
 from torchvision import models, transforms
+from torchvision.models import ResNet50_Weights
 from PIL import Image
 
-# 设置数据集文件夹路径
-dataset_dir = "/Users/cool/Downloads/animals/cheetah"  # 替换为你的图片根目录路径
+# 设置数据集路径
+dataset_dir = "../Insects_image_dataset/Ant"
 
-# 遍历文件夹获取所有图片路径
+# 获取所有图片路径
 dataset = []
 for root, _, files in os.walk(dataset_dir):
     for file in files:
-        if file.endswith(('.jpg', '.jpeg', '.png', '.bmp')):  # 检查图片格式
+        if file.endswith(('.jpg', '.jpeg', '.png', '.bmp')):
             dataset.append(os.path.join(root, file))
 
 print(f"共加载 {len(dataset)} 张图片")
 
-# 加载预训练模型（ResNet50）
-model = models.resnet50(pretrained=True)
+# 加载预训练模型
+model = models.resnet50(weights=ResNet50_Weights.DEFAULT)
 model.eval()
 
-# 定义图片预处理操作
+# 图片预处理
 preprocess = transforms.Compose([
     transforms.Resize(256),
     transforms.CenterCrop(224),
@@ -27,27 +28,31 @@ preprocess = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
-# 定义分类函数
-def classify_image(image_path):
+# 安全加载图片
+def open_image_safely(image_path):
     try:
-        # 打开图片并转换为 RGB 格式
-        image = Image.open(image_path).convert("RGB")
-        # 对图片进行预处理并转为张量
-        input_tensor = preprocess(image).unsqueeze(0)
-        # 使用模型预测
-        with torch.no_grad():
-            output = model(input_tensor)
-            confidence, class_id = torch.max(output, 1)
-            return confidence.item(), class_id.item()
+        with Image.open(image_path) as img:
+            img = img.convert("RGB")  # 转换为 RGB，忽略 EXIF 数据
+        return img
     except Exception as e:
-        print(f"无法处理图片 {image_path}: {e}")
+        print(f"无法加载图片 {image_path}: {e}")
+        return None
+
+# 分类图片
+def classify_image(image_path):
+    image = open_image_safely(image_path)
+    if image is None:
         return None, None
+    input_tensor = preprocess(image).unsqueeze(0)
+    with torch.no_grad():
+        output = model(input_tensor)
+        confidence, class_id = torch.max(output, 1)
+        return confidence.item(), class_id.item()
 
 # 设置置信度阈值
-confidence_threshold = 0.3
+confidence_threshold = 0.5
 
-# 筛选无关图片
-irrelevant_images = []  # 存储可能无关的图片路径
+irrelevant_images = []  # 存储可能无关的图片
 
 print("开始筛选无关图片...")
 for image_path in dataset:
