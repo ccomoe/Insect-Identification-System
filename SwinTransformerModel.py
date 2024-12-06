@@ -195,7 +195,7 @@ def get_next_model_save_path(base_dir, base_name="swin_insect_classifier"):
     return os.path.join(base_dir, next_file_name)
 
 # 训练模型
-epochs = 1
+epochs = 10
 for epoch in range(epochs):
     print(f"Epoch {epoch+1}/{epochs}")
 
