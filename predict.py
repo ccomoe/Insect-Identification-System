@@ -34,10 +34,11 @@ class SwinTransformerModel(nn.Module):
     def forward(self, x):
         return self.swin(pixel_values=x).logits
 
-# 动态处理文件夹结构（自动识别二三级混个文件夹），并返回类别标签
+# 动态处理文件夹结构（自动识别二三级混合文件夹），并返回类别标签
 def get_classes_from_mixed_folders(dataset_dir):
     """
     获取数据集的类别标签，支持混合层级文件夹结构。
+    如果根目录中既有子文件夹又有图像文件，则忽略根目录中的图像文件。
     如果目录为空或无有效类别，返回提示信息并终止程序。
 
     :param dataset_dir: 数据集的根目录
@@ -49,8 +50,21 @@ def get_classes_from_mixed_folders(dataset_dir):
     # 初始化类别列表
     classes = []
 
+    # 检查根目录中是否既有子文件夹又有图像文件
+    root_has_dirs = any(os.path.isdir(os.path.join(dataset_dir, item)) for item in os.listdir(dataset_dir))
+    root_has_images = any(
+        os.path.isfile(os.path.join(dataset_dir, item)) and item.lower().endswith(('.png', '.jpg', '.jpeg'))
+        for item in os.listdir(dataset_dir)
+    )
+
+    # 如果根目录中有图像文件且有子文件夹，忽略根目录的图像文件
+    ignore_root_images = root_has_dirs and root_has_images
+
     # 遍历文件夹结构
     for root, dirs, files in os.walk(dataset_dir):
+        # 如果是根目录并且需要忽略图像文件，跳过处理
+        if root == dataset_dir and ignore_root_images:
+            continue
         # 跳过空文件夹
         if not dirs and not files:
             continue
