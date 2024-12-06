@@ -6,12 +6,20 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 from sklearn.model_selection import train_test_split
 from transformers import SwinForImageClassification
-from tqdm import tqdm
+from rich.progress import Progress
 from PIL import Image
 
 # 设备配置
-device = torch.device("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
-print(f"Using device: {device}")
+if torch.backends.mps.is_available():
+    device = torch.device("mps")
+    device_name = "Apple MPS"
+elif torch.cuda.is_available():
+    device = torch.device("cuda")
+    device_name = torch.cuda.get_device_name(0)  # 获取CUDA设备名称
+else:
+    device = torch.device("cpu")
+    device_name = "CPU"
+print(f"Using device: {device} ({device_name})")
 
 # 数据预处理
 transform = transforms.Compose([
@@ -46,6 +54,7 @@ class InsectDataset(Dataset):
     def __getitem__(self, idx):
         image_path = self.image_paths[idx]
         label = self.labels[idx]
+        # 把打开的图片信息暂存在Image对象中，然后将对象地址赋值给变量image
         image = Image.open(image_path).convert('RGB')
         if self.transform:
             image = self.transform(image)
@@ -55,6 +64,9 @@ class InsectDataset(Dataset):
 root_dir = './dataset'  # 替换为实际路径
 dataset = InsectDataset(root_dir=root_dir, transform=transform)
 train_data, val_data = train_test_split(dataset, test_size=0.2, stratify=dataset.labels)
+
+# 加载类别标签，为后面保存标签使用
+classes = dataset.classes
 
 train_loader = DataLoader(train_data, batch_size=16, shuffle=True)
 val_loader = DataLoader(val_data, batch_size=16, shuffle=False)
@@ -83,22 +95,30 @@ def train(model, train_loader, criterion, optimizer, device):
     running_loss = 0.0
     correct_preds = 0
     total_preds = 0
+    total_batches = len(train_loader)  # 获取总批次数
 
-    for images, labels in tqdm(train_loader, desc="Training"):
-        images, labels = images.to(device), labels.to(device)
+    with Progress() as progress:
+        # 创建任务，设置总进度为 len(train_loader)
+        task = progress.add_task("[green]Training [0/{}]".format(total_batches), total=total_batches)
 
-        optimizer.zero_grad()
+        for batch_idx, (images, labels) in enumerate(train_loader, start=1):
+            images, labels = images.to(device), labels.to(device)
+    
+            optimizer.zero_grad()
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+    
+            running_loss += loss.item()
+            _, predicted = torch.max(outputs, 1)
+            correct_preds += (predicted == labels).sum().item()
+            total_preds += labels.size(0)
 
-        outputs = model(images)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
-
-        running_loss += loss.item()
-
-        _, predicted = torch.max(outputs, 1)
-        correct_preds += (predicted == labels).sum().item()
-        total_preds += labels.size(0)
+            # 更新任务描述，显示当前已训练批次数
+            progress.update(task, description=f"[green]Training [{batch_idx}/{total_batches}]")
+            # 推进任务进度
+            progress.advance(task)
 
     accuracy = correct_preds / total_preds
     avg_loss = running_loss / len(train_loader)
@@ -110,26 +130,72 @@ def validate(model, val_loader, criterion, device):
     running_loss = 0.0
     correct_preds = 0
     total_preds = 0
+    total_batches = len(val_loader)  # 获取总批次数
 
-    with torch.no_grad():
-        for images, labels in tqdm(val_loader, desc="Validating"):
-            images, labels = images.to(device), labels.to(device)
+    with Progress() as progress:
+        # 创建任务，设置总进度为 len(Val_loader)
+        task = progress.add_task("[cyan]Validating [0/{}]".format(total_batches), total=total_batches)
 
-            outputs = model(images)
-            loss = criterion(outputs, labels)
+        with torch.no_grad():
+            for batch_idx, (images, labels) in enumerate(val_loader, start=1):
+                images, labels = images.to(device), labels.to(device)
+    
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+    
+                running_loss += loss.item()
+                _, predicted = torch.max(outputs, 1)
+                correct_preds += (predicted == labels).sum().item()
+                total_preds += labels.size(0)
 
-            running_loss += loss.item()
-
-            _, predicted = torch.max(outputs, 1)
-            correct_preds += (predicted == labels).sum().item()
-            total_preds += labels.size(0)
-
+                # 更新任务描述，显示当前已验证批次数
+                progress.update(task, description=f"[cyan]Validating [{batch_idx}/{total_batches}]")
+                # 推进任务进度
+                progress.advance(task)
+            
     accuracy = correct_preds / total_preds
     avg_loss = running_loss / len(val_loader)
     return avg_loss, accuracy
 
+def get_next_model_save_path(base_dir, base_name="swin_insect_classifier"):
+    """
+    根据已有模型文件自动生成下一个保存路径。
+    
+    :param base_dir: 模型保存的目录
+    :param base_name: 模型的基础名称（默认: swin_insect_classifier）
+    :return: 下一个模型保存路径
+    """
+    if not os.path.exists(base_dir):
+        os.makedirs(base_dir)  # 如果目录不存在则创建
+
+    # 获取所有以 base_name 开头且以 .pth 结尾的文件
+    existing_files = [
+        f for f in os.listdir(base_dir) 
+        if f.startswith(base_name) and f.endswith(".pth")
+    ]
+    
+    # 提取文件名中的序号部分
+    max_index = -1
+    for file in existing_files:
+        if file == f"{base_name}.pth":
+            # 跳过没有序号的文件
+            continue
+        try:
+            # 提取序号
+            index = int(file.replace(base_name, "").replace(".pth", "").strip("_"))
+            max_index = max(max_index, index)
+        except ValueError:
+            continue  # 跳过不符合命名规则的文件
+
+    # 新文件名的序号加 1
+    next_index = max_index + 1
+    next_file_name = f"{base_name}_{next_index}.pth"
+
+    # 返回完整路径
+    return os.path.join(base_dir, next_file_name)
+
 # 训练模型
-epochs = 10
+epochs = 1
 for epoch in range(epochs):
     print(f"Epoch {epoch+1}/{epochs}")
 
@@ -139,6 +205,11 @@ for epoch in range(epochs):
     print(f"Train Loss: {train_loss:.4f}, Train Accuracy: {train_acc:.4f}")
     print(f"Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_acc:.4f}")
 
-# 保存模型
-torch.save(model.state_dict(), "./models/swin_insect_classifier.pth")
-print("Model saved as swin_insect_classifier.pth")
+# 保存模型和类别标签
+base_dir = "./models"
+save_path = get_next_model_save_path(base_dir)
+torch.save({
+    "model_state_dict": model.state_dict(),
+    "classes": classes  # 保存类别标签
+}, save_path)
+print(f"模型已经保存到: {save_path}")
