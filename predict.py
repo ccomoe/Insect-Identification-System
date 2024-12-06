@@ -34,8 +34,42 @@ class SwinTransformerModel(nn.Module):
     def forward(self, x):
         return self.swin(pixel_values=x).logits
 
+# 动态处理文件夹结构（自动识别二三级混个文件夹），并返回类别标签
+def get_classes_from_mixed_folders(dataset_dir):
+    """
+    获取数据集的类别标签，支持混合层级文件夹结构。
+    如果目录为空或无有效类别，返回提示信息并终止程序。
+
+    :param dataset_dir: 数据集的根目录
+    :return: 类别标签列表
+    """
+    if not os.path.exists(dataset_dir):
+        raise ValueError(f"Dataset directory '{dataset_dir}' does not exist. Please check the path.")
+    
+    # 初始化类别列表
+    classes = []
+
+    # 遍历文件夹结构
+    for root, dirs, files in os.walk(dataset_dir):
+        # 跳过空文件夹
+        if not dirs and not files:
+            continue
+
+        # 检查当前文件夹是否包含图片文件（根据常见图片后缀判断）
+        if any(file.lower().endswith(('.png', '.jpg', '.jpeg')) for file in files):
+            # 获取相对路径作为类别标签
+            category = os.path.relpath(root, dataset_dir)
+            classes.append(category.replace(os.sep, '/'))
+
+    # 检查是否成功提取类别
+    if not classes:
+        raise ValueError(f"No valid classes found in dataset directory '{dataset_dir}'. "
+                         "Ensure it contains image files organized in folders.")
+    
+    return sorted(classes)
+
 # 加载并初始化模型和类别标签
-def load_model_and_classes(model_path, dataset_path='./dataset'):
+def load_model_and_classes(model_path, dataset_dir='./dataset'):
     # 加载检查点
     checkpoint = torch.load(model_path, map_location=device, weights_only=False)
     
@@ -45,15 +79,14 @@ def load_model_and_classes(model_path, dataset_path='./dataset'):
         print("Loaded classes from checkpoint.")
     else:
         # 如果没有保存类别标签，从指定的数据集路径加载类别
-        if os.path.exists(dataset_path):
-            classes = sorted(os.listdir(dataset_path))
-            print(f"Classes not found in checkpoint. Loaded classes from dataset at '{dataset_path}'.")
+        if os.path.exists(dataset_dir):
+            classes = get_classes_from_mixed_folders(dataset_dir)
+            print(f"Classes not found in checkpoint. Loaded classes from dataset at '{dataset_dir}'.")
         else:
             raise FileNotFoundError(f"Dataset path '{dataset_path}' does not exist. Cannot infer classes.")
     
     # 获取类别数
     num_classes = len(classes)
-    
     # 初始化模型
     model = SwinTransformerModel(num_classes=num_classes).to(device)
     
