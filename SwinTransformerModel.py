@@ -31,20 +31,27 @@ transform = transforms.Compose([
 # 自定义数据集类
 class InsectDataset(Dataset):
     def __init__(self, root_dir, transform=None):
+        """
+        自定义昆虫数据集类，支持混合层级文件夹结构。
+
+        :param root_dir: 数据集的根目录
+        :param transform: 图像变换
+        """
         self.root_dir = root_dir
         self.transform = transform
-        self.classes = sorted(os.listdir(root_dir))  # 获取昆虫类别
+        self.classes = self.get_classes_from_mixed_folders(root_dir)  # 获取类别标签
         self.image_paths = []
         self.labels = []
 
+        # 遍历类别并记录图像路径和对应标签
         for idx, class_name in enumerate(self.classes):
-            class_folder = os.path.join(root_dir, class_name)
+            class_folder = os.path.join(root_dir, class_name.replace('/', os.sep))
             if not os.path.isdir(class_folder):  # 忽略非文件夹
                 continue
             for image_name in os.listdir(class_folder):
-                image_path = os.path.join(class_folder, image_name)
-                if image_name.startswith('.'):  # 忽略隐藏文件
+                if not image_name.lower().endswith(('.png', '.jpg', '.jpeg')) or image_name.startswith('.'):
                     continue
+                image_path = os.path.join(class_folder, image_name)
                 self.image_paths.append(image_path)
                 self.labels.append(idx)
 
@@ -54,11 +61,44 @@ class InsectDataset(Dataset):
     def __getitem__(self, idx):
         image_path = self.image_paths[idx]
         label = self.labels[idx]
-        # 把打开的图片信息暂存在Image对象中，然后将对象地址赋值给变量image
         image = Image.open(image_path).convert('RGB')
         if self.transform:
             image = self.transform(image)
         return image, label
+
+    @staticmethod
+    def get_classes_from_mixed_folders(dataset_dir):
+        """
+        获取数据集的类别标签，支持混合层级文件夹结构。
+        如果目录为空或无有效类别，返回提示信息并终止程序。
+
+        :param dataset_dir: 数据集的根目录
+        :return: 类别标签列表
+        """
+        if not os.path.exists(dataset_dir):
+            raise ValueError(f"Dataset directory '{dataset_dir}' does not exist. Please check the path.")
+        
+        # 初始化类别列表
+        classes = []
+
+        # 遍历文件夹结构
+        for root, dirs, files in os.walk(dataset_dir):
+            # 跳过空文件夹
+            if not dirs and not files:
+                continue
+
+            # 检查当前文件夹是否包含图片文件（根据常见图片后缀判断）
+            if any(file.lower().endswith(('.png', '.jpg', '.jpeg')) for file in files):
+                # 获取相对路径作为类别标签
+                category = os.path.relpath(root, dataset_dir)
+                classes.append(category.replace(os.sep, '/'))
+
+        # 检查是否成功提取类别
+        if not classes:
+            raise ValueError(f"No valid classes found in dataset directory '{dataset_dir}'. "
+                            "Ensure it contains image files organized in folders.")
+        
+        return sorted(classes)
 
 # 加载数据集
 root_dir = './dataset'  # 替换为实际路径
