@@ -140,5 +140,5 @@ for epoch in range(epochs):
     print(f"Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_acc:.4f}")
 
 # 保存模型
-torch.save(model.state_dict(), "./model/swin_insect_classifier.pth")
+torch.save(model.state_dict(), "./models/swin_insect_classifier.pth")
 print("Model saved as swin_insect_classifier.pth")
