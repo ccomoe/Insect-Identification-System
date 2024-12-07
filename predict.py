@@ -34,12 +34,13 @@ class SwinTransformerModel(nn.Module):
     def forward(self, x):
         return self.swin(pixel_values=x).logits
 
-# 动态处理文件夹结构（自动识别二三级混合文件夹），并返回类别标签
-def get_classes_from_mixed_folders(dataset_dir):
+def clean_and_get_classes(dataset_dir):
     """
-    获取数据集的类别标签，支持混合层级文件夹结构。
-    如果根目录中既有子文件夹又有图像文件，则忽略根目录中的图像文件。
-    如果目录为空或无有效类别，返回提示信息并终止程序。
+    清理数据集目录并获取类别标签，要求：
+    - 每个目录只能包含子目录或图像文件。
+    - 图像文件只能出现在叶子节点目录中。
+    - 非图像文件和空目录均会被删除。
+    - 非叶子节点目录中的图像文件会被删除。
 
     :param dataset_dir: 数据集的根目录
     :return: 类别标签列表
@@ -47,30 +48,55 @@ def get_classes_from_mixed_folders(dataset_dir):
     if not os.path.exists(dataset_dir):
         raise ValueError(f"Dataset directory '{dataset_dir}' does not exist. Please check the path.")
     
-    # 初始化类别列表
+    def is_image(file_name):
+        """检查文件是否为图片文件"""
+        return file_name.lower().endswith(('.png', '.jpg', '.jpeg'))
+
+    def clean_directory(directory):
+        """
+        清理目录，删除非规范内容：
+        - 删除非叶子节点的图像文件。
+        - 删除非图像文件。
+        - 删除空目录。
+        返回是否保留该目录。
+        """
+        has_dirs = False
+        has_images = False
+
+        # 遍历目录内容
+        for item in os.listdir(directory):
+            item_path = os.path.join(directory, item)
+            if os.path.isdir(item_path):
+                # 递归清理子目录
+                if not clean_directory(item_path):
+                    os.rmdir(item_path)  # 删除空目录
+                else:
+                    has_dirs = True
+            elif os.path.isfile(item_path):
+                if is_image(item):
+                    has_images = True
+                else:
+                    os.remove(item_path)  # 删除非图像文件
+
+        # 如果当前目录是非叶子节点，删除图像文件
+        if has_dirs and has_images:
+            for item in os.listdir(directory):
+                item_path = os.path.join(directory, item)
+                if os.path.isfile(item_path) and is_image(item):
+                    os.remove(item_path)
+            has_images = False
+
+        # 保留叶子节点目录或非空的子目录
+        return has_dirs or has_images
+
+    # 清理根目录
+    if not clean_directory(dataset_dir):
+        raise ValueError(f"Dataset directory '{dataset_dir}' is empty or does not meet the required structure.")
+
+    # 获取类别标签
     classes = []
-
-    # 检查根目录中是否既有子文件夹又有图像文件
-    root_has_dirs = any(os.path.isdir(os.path.join(dataset_dir, item)) for item in os.listdir(dataset_dir))
-    root_has_images = any(
-        os.path.isfile(os.path.join(dataset_dir, item)) and item.lower().endswith(('.png', '.jpg', '.jpeg'))
-        for item in os.listdir(dataset_dir)
-    )
-
-    # 如果根目录中有图像文件且有子文件夹，忽略根目录的图像文件
-    ignore_root_images = root_has_dirs and root_has_images
-
-    # 遍历文件夹结构
     for root, dirs, files in os.walk(dataset_dir):
-        # 如果是根目录并且需要忽略图像文件，跳过处理
-        if root == dataset_dir and ignore_root_images:
-            continue
-        # 跳过空文件夹
-        if not dirs and not files:
-            continue
-
-        # 检查当前文件夹是否包含图片文件（根据常见图片后缀判断）
-        if any(file.lower().endswith(('.png', '.jpg', '.jpeg')) for file in files):
+        if files and all(is_image(file) for file in files):
             # 获取相对路径作为类别标签
             category = os.path.relpath(root, dataset_dir)
             classes.append(category.replace(os.sep, '/'))
@@ -94,7 +120,7 @@ def load_model_and_classes(model_path, dataset_dir='./dataset'):
     else:
         # 如果没有保存类别标签，从指定的数据集路径加载类别
         if os.path.exists(dataset_dir):
-            classes = get_classes_from_mixed_folders(dataset_dir)
+            classes = clean_and_get_classes(dataset_dir)
             print(f"Classes not found in checkpoint. Loaded classes from dataset at '{dataset_dir}'.")
         else:
             raise FileNotFoundError(f"Dataset path '{dataset_path}' does not exist. Cannot infer classes.")
@@ -165,7 +191,7 @@ if not input_path:
 if os.path.isfile(os.path.join('./test_images', input_path)):
     input_path = os.path.join('./test_images', input_path)
 
-model_path = "./models/swin_insect_classifier.pth"
+model_path = "./models/swin_insect_classifier_0.pth"
 model, classes = load_model_and_classes(model_path)
 
 # 进行预测
