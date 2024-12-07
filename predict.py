@@ -197,7 +197,17 @@ if not os.path.isabs(input_path):  # 如果输入的是相对路径或文件名
 else:  # 如果是绝对路径，保持原样
     input_path = input_path
 
-model_path = "./models/swin_insect_classifier_0.pth"
+# 自动生成模型路径
+def get_model_path(base_path="./models", prefix="swin_insect_classifier_", extension=".pth"):
+    while True:
+        model_index = input("请输入模型序号（例如 0 对应 swin_insect_classifier_0.pth）：").strip()
+        model_path = os.path.join(base_path, f"{prefix}{model_index}{extension}")
+        if os.path.isfile(model_path):
+            print(f"成功加载模型路径: {model_path}")
+            return model_path
+        print(f"模型文件不存在: {model_path}，请重新输入。")
+
+model_path = get_model_path()
 model, classes = load_model_and_classes(model_path)
 
 # 进行预测
