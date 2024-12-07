@@ -36,7 +36,7 @@ class SwinTransformerModel(nn.Module):
 
 def clean_and_get_classes(dataset_dir):
     """
-    清理数据集目录并获取类别标签，要求：
+    清理数据集目录并获取类别标签，要求:
     - 每个目录只能包含子目录或图像文件。
     - 图像文件只能出现在叶子节点目录中。
     - 非图像文件和空目录均会被删除。
@@ -54,7 +54,7 @@ def clean_and_get_classes(dataset_dir):
 
     def clean_directory(directory):
         """
-        清理目录，删除非规范内容：
+        清理目录，删除非规范内容:
         - 删除非叶子节点的图像文件。
         - 删除非图像文件。
         - 删除空目录。
@@ -181,7 +181,7 @@ def predict(input_path, model, transform, classes, device):
         print(f"无效路径: {input_path}")  # 如果路径无效
 
 # 获取用户输入的路径或文件名
-input_path = input(f"请输入目标文件名（带扩展名）或文件夹路径（默认路径：./test_images）：").strip()
+input_path = input(f"请输入目标文件名(带扩展名)或文件夹路径(默认路径:./test_images):").strip()
 
 # 如果用户没有输入，默认使用 './test_images'
 if not input_path:
@@ -200,7 +200,7 @@ else:  # 如果是绝对路径，保持原样
 # 自动生成模型路径
 def get_model_path(base_path="./models", prefix="swin_insect_classifier_", extension=".pth"):
     while True:
-        model_index = input("请输入模型序号（例如 0 对应 swin_insect_classifier_0.pth）：").strip()
+        model_index = input("请输入模型序号(例如 0 对应 swin_insect_classifier_0.pth):").strip()
         model_path = os.path.join(base_path, f"{prefix}{model_index}{extension}")
         if os.path.isfile(model_path):
             print(f"成功加载模型路径: {model_path}")
