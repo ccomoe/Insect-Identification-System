@@ -187,9 +187,15 @@ input_path = input(f"请输入目标文件名（带扩展名）或文件夹路�
 if not input_path:
     input_path = './test_images'
 
-# 如果用户输入的是文件名，则在默认路径 './test_images' 中查找该文件
-if os.path.isfile(os.path.join('./test_images', input_path)):
-    input_path = os.path.join('./test_images', input_path)
+# 判断路径类型并处理
+if not os.path.isabs(input_path):  # 如果输入的是相对路径或文件名
+    default_path = os.path.join('./test_images', input_path)  # 假设为文件名并组合默认路径
+    if os.path.isfile(default_path) or os.path.isdir(default_path):  # 如果在默认路径中找到文件或文件夹
+        input_path = default_path
+    else:  # 如果不是文件名，解析为相对路径
+        input_path = os.path.abspath(default_path)  # 转为绝对路径
+else:  # 如果是绝对路径，保持原样
+    input_path = input_path
 
 model_path = "./models/swin_insect_classifier_0.pth"
 model, classes = load_model_and_classes(model_path)
