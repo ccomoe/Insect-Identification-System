@@ -48,9 +48,9 @@ def clean_and_get_classes(dataset_dir):
     if not os.path.exists(dataset_dir):
         raise ValueError(f"Dataset directory '{dataset_dir}' does not exist. Please check the path.")
     
-    def is_image(file_name):
+    def is_image(item):
         """检查文件是否为图片文件"""
-        return file_name.lower().endswith(('.png', '.jpg', '.jpeg'))
+        return item.lower().endswith(('.png', '.jpg', '.jpeg'))
 
     def clean_directory(directory):
         """
@@ -156,16 +156,28 @@ def predict_image(image_path, model, transform, classes, device):
 
 # 文件夹预测函数
 def predict_folder(folder_path, model, transform, classes, device):
+
+    def is_image(item):
+        """检查文件是否为图片文件"""
+        return item.lower().endswith(('.png', '.jpg', '.jpeg'))
+
     predictions = {}
-    for file_name in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, file_name)
-        if file_name.startswith('.') or not os.path.isfile(file_path):
-            continue
-        try:
-            class_name = predict_image(file_path, model, transform, classes, device)
-            predictions[file_name] = class_name
-        except Exception as e:
-            print(f"Error predicting {file_name}: {e}")
+    for root, dirs, files in os.walk(folder_path):
+        for item in files:
+            # 检查item是否为图像文件
+            if is_image(item):
+                # 拼接文件路径
+                file_path = os.path.join(root, item)
+                # 相对路径存储
+                rel_path = os.path.relpath(file_path, folder_path) 
+                # # 提取文件名，不要格式后缀
+                # file_name = os.path.splitext(item)[0]
+                try:
+                    # 调用文件预测函数
+                    class_name = predict_image(file_path, model, transform, classes, device)
+                    predictions[rel_path] = class_name
+                except Exception as e:
+                    print(f"Error predicting {file_name}: {e}")
     return predictions
 
 # 通用预测函数
@@ -180,22 +192,29 @@ def predict(input_path, model, transform, classes, device):
     else:
         print(f"无效路径: {input_path}")  # 如果路径无效
 
-# 获取用户输入的路径或文件名
-input_path = input(f"请输入目标文件名(带扩展名)或文件夹路径(默认路径:./test_images):").strip()
+# 获取预测数据路径
+def get_input_path(base_path="./test_images"):
+    while True:
+        input_path = input(f"请输入目标文件名(带扩展名)或文件夹路径(默认路径: {base_path}):").strip()
+        # 将用户输入的路径转为正确的格式（去除无意的转义字符，处理路径中的空格和特殊字符）
+        input_path = os.path.normpath(input_path)
+        input_path = input_path.replace("\\", "")  # 去除路径中的反斜杠
+        input_path = input_path.strip('"')  # 去掉可能的引号
 
-# 如果用户没有输入，默认使用 './test_images'
-if not input_path:
-    input_path = './test_images'
+        # 如果用户未输入，默认使用 base_path
+        if not input_path:
+            return base_path
+        
+        # 获取完整路径
+        full_path = input_path if os.path.isabs(input_path) else os.path.join(base_path, input_path)
+        
+        # 检查路径是否有效
+        if os.path.exists(full_path):
+            return full_path
+        
+        print(f"无效路径: {full_path}")
 
-# 判断路径类型并处理
-if not os.path.isabs(input_path):  # 如果输入的是相对路径或文件名
-    default_path = os.path.join('./test_images', input_path)  # 假设为文件名并组合默认路径
-    if os.path.isfile(default_path) or os.path.isdir(default_path):  # 如果在默认路径中找到文件或文件夹
-        input_path = default_path
-    else:  # 如果不是文件名，解析为相对路径
-        input_path = os.path.abspath(default_path)  # 转为绝对路径
-else:  # 如果是绝对路径，保持原样
-    input_path = input_path
+input_path = get_input_path()
 
 # 自动生成模型路径
 def get_model_path(base_path="./models", prefix="swin_insect_classifier_", extension=".pth"):
