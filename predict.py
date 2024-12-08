@@ -1,4 +1,5 @@
 import os
+import platform
 import torch
 import torch.nn as nn
 from torchvision import transforms
@@ -196,20 +197,27 @@ def predict(input_path, model, transform, classes, device):
 def get_input_path(base_path="./test_images"):
     while True:
         input_path = input(f"请输入目标文件名(带扩展名)或文件夹路径(默认路径: {base_path}):").strip()
-        # 将用户输入的路径转为正确的格式（去除无意的转义字符，处理路径中的空格和特殊字符）
-        input_path = os.path.normpath(input_path)
-        input_path = input_path.replace("\\", "")  # 去除路径中的反斜杠
-        input_path = input_path.strip('"')  # 去掉可能的引号
+
+        # 去除两端的引号
+        input_path = input_path.strip('"').strip("'")
 
         # 如果用户未输入，默认使用 base_path
         if not input_path:
+            print(f"使用默认路径: {base_path}")
             return base_path
-        
-        # 获取完整路径
-        full_path = input_path if os.path.isabs(input_path) else os.path.join(base_path, input_path)
-        
+
+        # 检测操作系统
+        current_system = platform.system()
+        if current_system in ["Darwin", "Linux"]:  # macOS 和 Linux
+            # 去掉路径中的转义符（macOS/Linux 终端拖入文件可能会自动加 `\`）
+            input_path = input_path.replace("\\", "")
+
+        # 标准化路径：处理多余分隔符，统一格式
+        full_path = os.path.normpath(input_path if os.path.isabs(input_path) else os.path.join(base_path, input_path))
+
         # 检查路径是否有效
         if os.path.exists(full_path):
+            print(f"成功加载路径: {full_path}")
             return full_path
         
         print(f"无效路径: {full_path}")
