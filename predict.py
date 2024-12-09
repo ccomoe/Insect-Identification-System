@@ -18,22 +18,30 @@ else:
     device_name = "CPU"
 print(f"Using device: {device} ({device_name})")
 
-# 数据预处理
+# 数据预处理、数据增强
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
+    transforms.RandomHorizontalFlip(p=0.5),
+    transforms.RandomVerticalFlip(p=0.5),
+    transforms.RandomRotation(degrees=30),
+    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
-# Swin Transformer 模型定义
+# Swin Transformer 模型
 class SwinTransformerModel(nn.Module):
     def __init__(self, num_classes):
         super(SwinTransformerModel, self).__init__()
         self.swin = SwinForImageClassification.from_pretrained("microsoft/swin-base-patch4-window7-224")
-        self.swin.classifier = nn.Linear(self.swin.config.hidden_size, num_classes)
+        self.swin.classifier = nn.Sequential(
+            nn.Dropout(p=0.5),
+            nn.Linear(self.swin.config.hidden_size, num_classes)
+        )
 
     def forward(self, x):
-        return self.swin(pixel_values=x).logits
+        x = self.swin(pixel_values=x).logits
+        return x
 
 def clean_and_get_classes(dataset_dir):
     """
