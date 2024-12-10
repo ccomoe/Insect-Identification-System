@@ -17,55 +17,16 @@
 <body>
     <h1>Image Classification</h1>
     <div id="file-input-container">
-        <label for="file-input">Upload Images</label>
+        <label for="file-input" class="file-upload-btn">
+            <span>Upload Images</span>
+        </label>
         <input type="file" id="file-input" name="files" accept="image/*" multiple>
+        <p id="file-count" class="file-count">No files selected</p> <!-- 显示文件数量的段落 -->
         <button onclick="uploadImages()">Start Predict</button>
     </div>
 
     <div id="results"></div>
 
-    <script>
-        function uploadImages() {
-            const fileInput = document.getElementById('file-input');
-            const files = fileInput.files;
-
-            if (!files.length) {
-                return alert("Please choose files to upload.");
-            }
-
-            const formData = new FormData();
-            Array.from(files).forEach(file => formData.append('files', file)); // Use 'files' as name
-
-            fetch('/predict', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                const resultsContainer = document.getElementById('results');
-                resultsContainer.innerHTML = ''; // Clear previous results
-
-                Object.entries(data).forEach(([filename, prediction]) => {
-                    const container = document.createElement('div');
-                    container.className = 'image-container';
-
-                    const img = document.createElement('img');
-                    img.src = `uploads/${filename}?${new Date().getTime()}`; // 加上当前时间戳作为查询参数
-                    img.alt = filename;
-
-                    const text = document.createElement('p');
-                    text.textContent = `Filename: ${filename}\nPredicted: ${prediction}`;
-
-                    container.appendChild(img);
-                    container.appendChild(text);
-                    resultsContainer.appendChild(container);
-                });
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while uploading the files.');
-            });
-        }
-    </script>
+    <script src="static/script.js"></script>
 </body>
 </html>
