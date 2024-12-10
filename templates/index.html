@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,6 +15,7 @@
     <link rel="stylesheet" href="static/style.css">
     <link rel="stylesheet" href="static/mouse.css">
 </head>
+
 <body>
     <h1>Image Classification</h1>
     <div id="file-input-container">
@@ -22,11 +24,14 @@
         </label>
         <input type="file" id="file-input" name="files" accept="image/*" multiple>
         <p id="file-count" class="file-count">No files selected</p> <!-- 显示文件数量的段落 -->
-        <button onclick="uploadImages()">Start Predict</button>
+        <button onclick="uploadImages()" id="start-predict-btn">Start Predict</button>
+        <!-- 容器内部加载动画 -->
+        <div id="loading-container" class="loading-container" style="display: none;">
+            <div class="spinner"></div>
+        </div>
     </div>
-
     <div id="results"></div>
-
     <script src="static/script.js"></script>
 </body>
+
 </html>
