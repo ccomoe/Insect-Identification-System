@@ -1,0 +1,99 @@
+/* style.css */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+h1 {
+    text-align: center;
+    font-size: 2rem;
+    color: #555;
+    margin: 20px 0;
+}
+
+#file-input-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+label {
+    font-size: 1rem;
+    color: #555;
+    font-weight: bold;
+}
+
+input[type="file"] {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+button {
+    background-color: #FFC0CB; /* 设置淡粉色背景 */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* 增加过渡效果 */
+}
+
+button:hover {
+    background-color: #FFB6C1; /* 鼠标悬停时更浅的粉色 */
+    transform: scale(1.05); /* 悬停时略微放大 */
+}
+
+button:active {
+    background-color: #FF69B4; /* 点击时使用更深的粉色 */
+    transform: scale(0.95); /* 点击时略微缩小 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) inset; /* 内阴影模拟按钮被按下的感觉 */
+}
+
+#results {
+    margin-top: 20px;
+    display: flex; /* 使用 Flexbox 布局 */
+    flex-wrap: wrap; /* 支持换行 */
+    justify-content: flex-start; /* 从左到右排列 */
+    gap: 20px; /* 设置元素间距 */
+    padding: 10px;
+    max-width: 1200px; /* 限制父容器宽度 */
+    margin-left: auto;
+    margin-right: auto; /* 居中显示内容 */
+}
+
+.image-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 200px; /* 每个图片容器的固定宽度 */
+}
+
+img {
+    max-width: 150px;
+    max-height: 150px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+p {
+    font-size: 14px;
+    text-align: center;
+    margin: 5px 0; /* 间距更清晰 */
+    line-height: 1.5; /* 行间距更舒适 */
+    word-wrap: break-word; /* 防止内容溢出 */
+    white-space: pre-line; /* 保持文本中的换行符 */
+}
