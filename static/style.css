@@ -1,10 +1,15 @@
 /* style.css */
+html, body {
+    height: 100%; /* 确保页面高度占满视口 */
+    margin: 0;    /* 去掉默认的页边距 */
+}
+
 body {
     font-family: Arial, sans-serif;
-    margin: 0;
     padding: 0;
     background-color: #f9f9f9;
     color: #333;
+    overflow-y: auto; /* 如果内容超出页面高度，启用纵向滚动条 */
 }
 
 h1 {
