@@ -7,6 +7,7 @@ from PIL import Image
 from transformers import SwinForImageClassification
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
+import atexit  # 引入 atexit 模块
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
@@ -194,6 +195,9 @@ def clear_uploads_folder():
         file_path = os.path.join(uploads, filename)
         if os.path.isfile(file_path):
             os.remove(file_path)
+
+# 使用 atexit 注册退出时的清理函数
+atexit.register(clear_uploads_folder)
 
 # 路由：主页
 @app.route('/')
