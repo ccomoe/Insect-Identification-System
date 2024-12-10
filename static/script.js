@@ -54,3 +54,20 @@ document.getElementById('file-input').addEventListener('change', function() {
         fileCountText.classList.add('hidden'); // 隐藏文本
     }
 });
+
+// 动态更新指针位置
+document.addEventListener('mousemove', function (e) {
+    var cursor = document.getElementById('cursor');
+    
+    if (!cursor) {
+        // 如果没有cursor元素，创建一个新的
+        cursor = document.createElement('div');
+        cursor.id = 'cursor';
+        document.body.appendChild(cursor);
+    }
+
+    // 更新指针位置
+    cursor.style.top = e.clientY + 'px';
+    cursor.style.left = e.clientX + 'px';
+});
+
