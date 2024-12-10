@@ -168,7 +168,7 @@ model_path = get_model_path()
 model, classes = load_model_and_classes(model_path)
 
 # 单张图片预测函数
-def predict_image(file, predictions, model=model, transform=transform, classes=classes, device=device):
+def predict_image(file, predictions, model=model, classes=classes, transform=transform, device=device):
     image = Image.open(file).convert('RGB')
     image = transform(image).unsqueeze(0).to(device)  # 增加 batch 维度
 
@@ -188,6 +188,13 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 # 定义变量
 uploads = app.config['UPLOAD_FOLDER']
 
+# 清理 uploads 文件夹中的所有文件
+def clear_uploads_folder():
+    for filename in os.listdir(uploads):
+        file_path = os.path.join(uploads, filename)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+
 # 路由：主页
 @app.route('/')
 def index():
@@ -201,6 +208,7 @@ def uploaded_file(filename):
 # 路由：上传图片并预测
 @app.route('/predict', methods=['POST'])
 def predict_web():
+    clear_uploads_folder()
     if 'files' not in request.files:
         return jsonify({"error": "No files uploaded"}), 400
     
@@ -222,4 +230,4 @@ def predict_web():
     return jsonify(predictions)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
