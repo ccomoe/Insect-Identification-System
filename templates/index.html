@@ -11,13 +11,15 @@
         img { max-width: 150px; max-height: 150px; margin-bottom: 10px; }
         p { font-size: 14px; word-wrap: break-word; text-align: center; }
     </style>
+    <link rel="stylesheet" href="static/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ccomoe/library@main/cursor/mouse.css">
 </head>
 <body>
     <h1>Image Classification</h1>
-    <div>
+    <div id="file-input-container">
         <label for="file-input">Upload Images</label>
         <input type="file" id="file-input" name="files" accept="image/*" multiple>
-        <button onclick="uploadImages()">Upload</button>
+        <button onclick="uploadImages()">Start Predict</button>
     </div>
 
     <div id="results"></div>
@@ -48,7 +50,7 @@
                     container.className = 'image-container';
 
                     const img = document.createElement('img');
-                    img.src = `uploads/${filename}`; // Assuming file is accessible from the server
+                    img.src = `uploads/${filename}?${new Date().getTime()}`; // 加上当前时间戳作为查询参数
                     img.alt = filename;
 
                     const text = document.createElement('p');
