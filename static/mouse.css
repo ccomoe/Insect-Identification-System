@@ -1,0 +1,21 @@
+/* 全局设置自定义指针 */
+body {
+    cursor: url(https://cdn.jsdelivr.net/gh/ccolr/library@main/cursor/default.cur), auto;
+    z-index: 9999; /* 确保指针不被其他内容遮挡 */
+    position: relative;
+}
+
+/* 对图片和链接应用自定义指针样式 */
+img, a {
+    cursor: url(https://cdn.jsdelivr.net/gh/ccolr/library@main/cursor/pointer.cur), auto;
+}
+
+/* 自定义指针的容器样式 */
+#cursor {
+    position: fixed; /* 固定在视口内 */
+    top: 0;
+    left: 0;
+    z-index: 99999; /* 高于页面其他内容 */
+    pointer-events: none; /* 确保自定义指针不会拦截鼠标事件 */
+    transition: transform 0.1s ease-in-out;
+}
