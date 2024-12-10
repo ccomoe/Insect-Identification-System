@@ -33,34 +33,60 @@ label {
     font-weight: bold;
 }
 
+/* 隐藏默认文件输入按钮 */
 input[type="file"] {
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 5px;
-    font-size: 0.9rem;
-    cursor: pointer;
+    display: none;
 }
 
-button {
-    background-color: #FFC0CB; /* 设置淡粉色背景 */
+/* 通用按钮样式，适用于上传按钮和“Start Predict”按钮 */
+button, .file-upload-btn {
+    background-color: #FFC0CB; /* 淡粉色背景 */
     color: white;
     border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
+    border-radius: 25px; /* 圆形按钮 */
+    padding: 12px 25px;
     font-size: 1rem;
+    font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease; /* 增加过渡效果 */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* 添加过渡效果 */
+    display: inline-block;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 按钮阴影 */
 }
 
-button:hover {
-    background-color: #FFB6C1; /* 鼠标悬停时更浅的粉色 */
-    transform: scale(1.05); /* 悬停时略微放大 */
+button:hover, .file-upload-btn:hover {
+    background-color: #FFB6C1; /* 鼠标悬停时浅粉色 */
+    transform: scale(1.1); /* 鼠标悬停时按钮略微放大 */
 }
 
-button:active {
-    background-color: #FF69B4; /* 点击时使用更深的粉色 */
-    transform: scale(0.95); /* 点击时略微缩小 */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) inset; /* 内阴影模拟按钮被按下的感觉 */
+button:active, .file-upload-btn:active {
+    background-color: #FF69B4; /* 按钮被点击时变为热粉色 */
+    transform: scale(0.95); /* 点击时按钮稍微缩小 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) inset; /* 模拟按下的效果 */
+}
+
+/* 如果有额外需要调整的文字样式 */
+button span, .file-upload-btn span {
+    font-size: 1rem;
+    color: #fff;
+}
+
+/* 美化显示选择文件数量的文本 */
+#file-count {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+    background-color: #ADD8E6; /* 与上传按钮一致的淡粉色背景 */
+    border-radius: 25px; /* 与按钮一致的圆角 */
+    padding: 12px 25px;
+    display: inline-block;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 给文本加阴影 */
+    width: fit-content; /* 自适应宽度 */
+}
+
+#file-count.hidden {
+    display: none; /* 隐藏文本 */
 }
 
 #results {
