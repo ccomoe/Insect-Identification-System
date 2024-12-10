@@ -21,13 +21,9 @@ else:
     device_name = "CPU"
 print(f"Using device: {device} ({device_name})")
 
-# 数据预处理、数据增强
+# 数据预处理
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
-    transforms.RandomHorizontalFlip(p=0.5),
-    transforms.RandomVerticalFlip(p=0.5),
-    transforms.RandomRotation(degrees=30),
-    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
@@ -48,7 +44,7 @@ class InsectDataset(Dataset):
         self.labels = []
 
         # 遍历类别并记录图像路径和对应标签
-        for idx, class_name in enumerate(self.classes):
+        for idx, class_name in enumerate(self.classes): # enumerate()返回一个可迭代对象，一个包含索引和值的元组
             class_folder = os.path.join(root_dir, class_name.replace('/', os.sep))
             if not os.path.isdir(class_folder):  # 忽略非文件夹
                 continue
@@ -161,14 +157,10 @@ class SwinTransformerModel(nn.Module):
     def __init__(self, num_classes):
         super(SwinTransformerModel, self).__init__()
         self.swin = SwinForImageClassification.from_pretrained("microsoft/swin-base-patch4-window7-224")
-        self.swin.classifier = nn.Sequential(
-            nn.Dropout(p=0.5),
-            nn.Linear(self.swin.config.hidden_size, num_classes)
-        )
+        self.swin.classifier = nn.Linear(self.swin.config.hidden_size, num_classes)
 
     def forward(self, x):
-        x = self.swin(pixel_values=x).logits
-        return x
+        return self.swin(pixel_values=x).logits
 
 # 初始化模型
 num_classes = len(dataset.classes)
