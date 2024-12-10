@@ -19,12 +19,14 @@ h1 {
     margin: 20px 0;
 }
 
+/* 文件输入容器，确保所有元素居中对齐 */
 #file-input-container {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin-top: 20px;
+    flex-wrap: wrap; /* 允许内容自动换行 */
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
+    gap: 10px; /* 元素之间的间距 */
+    margin-top: 20px; /* 顶部间距 */
 }
 
 label {
@@ -49,8 +51,12 @@ button, .file-upload-btn {
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease; /* 添加过渡效果 */
-    display: inline-block;
+    display: inline-flex; /* 使用 flexbox 布局 */
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
+    text-align: center; /* 确保文字对齐 */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 按钮阴影 */
+    width: auto; /* 根据内容自适应宽度 */
 }
 
 button:hover, .file-upload-btn:hover {
@@ -68,7 +74,11 @@ button:active, .file-upload-btn:active {
 button span, .file-upload-btn span {
     font-size: 1rem;
     color: #fff;
+    display: block; /* 保证 span 的样式可控制 */
+    text-align: center; /* 文本居中 */
+    width: 100%; /* 填充父容器宽度 */
 }
+
 
 /* 美化显示选择文件数量的文本 */
 #file-count {
