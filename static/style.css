@@ -79,7 +79,6 @@ button span, .file-upload-btn span {
     width: 100%; /* 填充父容器宽度 */
 }
 
-
 /* 美化显示选择文件数量的文本 */
 #file-count {
     text-align: center;
@@ -140,4 +139,30 @@ p {
     line-height: 1.5; /* 行间距更舒适 */
     word-wrap: break-word; /* 防止内容溢出 */
     white-space: pre-line; /* 保持文本中的换行符 */
+}
+
+/* 加载动画的样式 */
+.loading-container {
+    position: fixed; /* 固定位置，覆盖整个页面 */
+    display: none; /* 默认隐藏 */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999; /* 确保在最上层 */
+    justify-content: center; /* 居中对齐内容 */
+    align-items: center; /* 居中对齐内容 */
+}
+
+.spinner {
+    border: 4px solid #f3f3f3; /* 背景色 */
+    border-top: 4px solid #3498db; /* 动画颜色 */
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite; /* 旋转动画 */
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }

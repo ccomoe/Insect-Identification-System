@@ -7,6 +7,11 @@ function uploadImages() {
         return alert("Please choose files to upload.");
     }
 
+    // 显示加载动画
+    console.log("Showing loading animation");
+    document.getElementById("loading-container").style.display = "block";
+    document.getElementById("start-predict-btn").disabled = true; // 禁用按钮
+
     const formData = new FormData();
     Array.from(files).forEach(file => formData.append('files', file)); // Use 'files' as name
 
@@ -16,8 +21,15 @@ function uploadImages() {
     })
     .then(response => response.json())
     .then(data => {
+        console.log("Response received");
+        // 清空之前的结果
         const resultsContainer = document.getElementById('results');
         resultsContainer.innerHTML = ''; // Clear previous results
+
+        // 隐藏加载动画
+        console.log("Hiding loading animation");
+        document.getElementById("loading-container").style.display = "none";
+        document.getElementById("start-predict-btn").disabled = false; // 启用按钮
 
         Object.entries(data).forEach(([filename, prediction]) => {
             const container = document.createElement('div');
@@ -37,6 +49,10 @@ function uploadImages() {
     })
     .catch(error => {
         console.error('Error:', error);
+        // 隐藏加载动画
+        console.log("Hiding loading animation (error)");
+        document.getElementById("loading-container").style.display = "none";
+        document.getElementById("start-predict-btn").disabled = false; // 启用按钮
         alert('An error occurred while uploading the files.');
     });
 }
@@ -70,4 +86,3 @@ document.addEventListener('mousemove', function (e) {
     cursor.style.top = e.clientY + 'px';
     cursor.style.left = e.clientX + 'px';
 });
-
