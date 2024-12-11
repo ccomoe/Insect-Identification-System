@@ -13,10 +13,6 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 # 设备配置
 if torch.backends.mps.is_available():
     device = torch.device("mps")
@@ -36,6 +32,11 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
+# 判断是否为允许文件类型
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 # Swin Transformer 模型
 class SwinTransformerModel(nn.Module):
     def __init__(self, num_classes):
@@ -46,6 +47,7 @@ class SwinTransformerModel(nn.Module):
     def forward(self, x):
         return self.swin(pixel_values=x).logits
 
+# 严格规范数据集结构并获取类别标签
 def clean_and_get_classes(dataset_dir):
     """
     清理数据集目录并获取类别标签，要求:
