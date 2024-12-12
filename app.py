@@ -41,7 +41,10 @@ def allowed_file(filename):
 class SwinTransformerModel(nn.Module):
     def __init__(self, num_classes):
         super(SwinTransformerModel, self).__init__()
-        self.swin = SwinForImageClassification.from_pretrained("microsoft/swin-base-patch4-window7-224")
+        # 从本地加载模型
+        self.swin = SwinForImageClassification.from_pretrained("./swin_base_model")
+        # 从Hugging Face加载模型
+        # self.swin = SwinForImageClassification.from_pretrained("microsoft/swin-base-patch4-window7-224")
         self.swin.classifier = nn.Linear(self.swin.config.hidden_size, num_classes)
 
     def forward(self, x):
