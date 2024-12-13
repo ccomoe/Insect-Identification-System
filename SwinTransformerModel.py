@@ -241,7 +241,7 @@ def validate(model, val_loader, criterion, device):
     avg_loss = running_loss / len(val_loader)
     return avg_loss, accuracy
 
-def get_next_model_save_path(base_dir, base_name="swin_insect_classifier"):
+def get_next_model_save_path(base_dir = "./models", base_name="swin_insect_classifier"):
     """
     根据已有模型文件自动生成下一个保存路径。
     
@@ -290,8 +290,7 @@ for epoch in range(epochs):
     print(f"Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_acc:.4f}")
 
 # 保存模型和类别标签
-base_dir = "./models"
-save_path = get_next_model_save_path(base_dir)
+save_path = get_next_model_save_path()
 torch.save({
     "model_state_dict": model.state_dict(),
     "classes": classes  # 保存类别标签
