@@ -1,7 +1,7 @@
 # Insect_Identification_System
 
 ## 项目介绍
-该项目是一个基于SwinTransformer和flask框架的昆虫识别系统，可以实现对各种各样的昆虫的识别。SwinTransformerModel.py可以对项目根目录的dataset文件夹中已分类的图像数据集进行训练，会将训练好的模型权重在保存在model文件夹中。p redict.py文件可以预测指定路径中的所有昆虫图像，默认路径为./test_images。还使用flask框架搭建了一个网页端，可以在网页中对比查看昆虫图像和预测结果。
+该项目是一个基于SwinTransformer和flask框架的昆虫识别系统，可以实现对各种各样的昆虫的识别。SwinTransformerModel.py可以对项目根目录的dataset文件夹中已分类的图像数据集进行训练，会将训练好的模型权重在保存在model文件夹中。predict.py文件可以预测指定路径中的所有昆虫图像，默认路径为./test_images。还使用flask框架搭建了一个网页端，可以在网页中对比查看昆虫图像和预测结果。
 
 ## 功能特点
 
