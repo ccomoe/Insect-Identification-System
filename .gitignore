@@ -1,6 +1,6 @@
-/dataset
-/models
-/test_images
-/uploads
-/swin_base_model
+/dataset/*
+/models/*
+/test_images/*
+/uploads/*
+/swin_base_model/*
 .DS_Store
