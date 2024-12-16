@@ -13,7 +13,7 @@ function uploadImages() {
     document.getElementById("start-predict-btn").disabled = true; // 禁用按钮
 
     const formData = new FormData();
-    Array.from(files).forEach(file => formData.append('files', file)); // Use 'files' as name
+    Array.from(files).forEach(file => formData.append('files', file));
 
     fetch('/predict', {
         method: 'POST',
@@ -22,9 +22,8 @@ function uploadImages() {
     .then(response => response.json())
     .then(data => {
         console.log("Response received");
-        // 清空之前的结果
         const resultsContainer = document.getElementById('results');
-        resultsContainer.innerHTML = ''; // Clear previous results
+        resultsContainer.innerHTML = ''; // 清空之前的结果
 
         // 隐藏加载动画
         console.log("Hiding loading animation");
