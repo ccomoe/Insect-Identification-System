@@ -1,5 +1,5 @@
 /* 全局设置自定义指针 */
-body {
+html {
     cursor: url(https://cdn.jsdelivr.net/gh/ccomoe/library@main/cursor/default.cur), auto;
     z-index: 9999; /* 确保指针不被其他内容遮挡 */
     position: relative;
