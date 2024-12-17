@@ -1,8 +1,5 @@
 /dataset
 /test_images
 /models/*.pth
-/uploads/*.jpg
-/uploads/*.png
-/uploads/*.jpeg
 /swin_base_model/*
 .DS_Store
