@@ -1,7 +1,8 @@
-/dataset/*
-!/dataset/bees/*
+/dataset
 /test_images
-!/test_images/butterflies/*
-!/test_images/aphids/*
+/models/*.pth
+/uploads/*.jpg
+/uploads/*.png
+/uploads/*.jpeg
 /swin_base_model/*
 .DS_Store
