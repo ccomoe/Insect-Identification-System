@@ -1,5 +1,6 @@
-/dataset
-/test_images
+/dataset/*
+/test_images/*
 /models/*.pth
 /swin_base_model/*
+!.gitkeep
 .DS_Store
